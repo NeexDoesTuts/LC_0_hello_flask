@@ -1,7 +1,7 @@
 # Hello Flask
 These are notes created wile following along LC101 Web Dev tutorial: [Hello-Flask](https://www.youtube.com/playlist?list=PLs5n5nYB22fKgVuztx_A9bilcmIZGrVoK). 
 
-The setup tutorial is available ![in the repository.](./setup_instructions.pdf)
+The setup tutorial is available [in the repository.](./setup_instructions.pdf)
 
 ## Get virtual environment set-up
 
