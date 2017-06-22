@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -157,12 +157,19 @@ def validate_time():
             minutes = "" # clear it out to redisplay form without it
 
     if not minutes_error and not hours_error: # empty string is truthy 
-        return "Success"
+        time = str(hours) + ":" + str(minutes)
+        return redirect("valid-time?time={0}".format(time))
     else:
         return time_form.format(hours=hours,
                         hours_error=hours_error,
                         minutes=minutes,
                         minutes_error=minutes_error)
+
+@app.route("/valid-time")
+def valid_time():
+    time = request.args.get("time")
+    return "<h1>You submited {0}. Thanks for submitting a valid time!</h1>".format(time)
+
 
 if __name__ == "__main__":
     app.run()
