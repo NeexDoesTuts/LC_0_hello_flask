@@ -168,7 +168,7 @@ def validate_time():
 @app.route("/valid-time")
 def valid_time():
     time = request.args.get("time")
-    return "<h1>You submited {0}. Thanks for submitting a valid time!</h1>".format(time)
+    return "<h1>You submitted {0}. Thanks for submitting a valid time!</h1>".format(time)
 
 
 if __name__ == "__main__":
