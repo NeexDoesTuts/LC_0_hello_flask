@@ -73,6 +73,25 @@ lc_form = """
 </html>
 """
 
+time_form = """
+<style>
+    .error {{ color: red; }}
+</style>
+<h1></h1>
+<form action="" method="POST">
+    <label>Hours (24-hour format):
+        <input name="hours" type="text" value="{hours}" />
+    </label>
+    <p class="error">{hours_error}</p>
+
+    <label>Minutes:
+        <input name="minutes" type="text" value="{minutes}" />
+    </label>
+    <p class="error">{minutes_error}</p>
+    <input type="submit" value="Validate" />
+</form>
+"""
+
 @app.route("/")
 def index():
     return form
