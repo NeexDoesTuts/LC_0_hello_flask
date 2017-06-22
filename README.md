@@ -1,7 +1,24 @@
-# Hello Flask
-These are notes created wile following along LC101 Web Dev tutorial: [Hello-Flask](https://www.youtube.com/playlist?list=PLs5n5nYB22fKgVuztx_A9bilcmIZGrVoK). 
+- [Flask](#flask)
+    - [Get virtual environment set-up](#get-virtual-environment-set-up)
+    - [Build main.py file](#build-main-py-file)
+        - [Explanation to Hello-Flask code](#explanation-to-hello-flask-code)
+    - [Forms](#forms)
+        - [Forms in Flask](#forms-in-flask)
+            - [Accessing GET request parameters](#accessing-get-request-parameters)
+            - [Accessing POST request parameters](#accessing-post-request-parameters)
+            - [405 - Method Not Allowed](#405-method-not-allowed)
+        - [Form inputs](#form-inputs)
+            - [Accessing form data](#accessing-form-data)
+            - [Data displayed:](#data-displayed)
+            - [.format() method](#format-method)
+                - [Using indexed placeholders](#using-indexed-placeholders)
+                - [Using named placeholders](#using-named-placeholders)
+    - [Validation](#validation)
+        - [Server-side validation](#server-side-validation)
+        - [Redirects](#redirects)
+    - [HTML escaping](#html-escaping)
 
-The setup tutorial is available [in the repository.](./setup_instructions.pdf)
+# Flask
 
 ## Get virtual environment set-up
 
@@ -48,7 +65,7 @@ if __name__ == "__main__":
 python main.py
 ```
 
-### Explanations
+### Explanation to Hello-Flask code
 
 * `from flask import Flask`: this imports the `Flask` class from the `flask` module.
 * `app = Flask(__name__)`: app will be the object created by the constructor `Flask`. `__name__` is a variable controlled by Python that tells code what module it's in.
@@ -129,7 +146,7 @@ form_value = request.form['param_name']
 
 An HTTP status of 405 - Method Not Allowed will be received if a resource/path is requested that doesn't accept requests using the given method (usually, `GET` or `POST`). This can be a common mistake when setting up a form to `POST` to a given path, but failing to configure the handler function to accept `POST` requests.
 
-## Form inputs
+### Form inputs
 
 Notice especially the hidden input.
 
@@ -247,19 +264,136 @@ markup = markup.format(title='My Page Title', heading='My Page Heading')
 print(markup)
 ```
 
+## Validation
 
+Validation is the process of checking data against requirements. The requirements might be chosen by the developer e.g.: max length for a username or a tweet. But also logical validity like range for dates, time, temperature, weight, age, addresses, phone numbers, credit card numbers, etc. 
 
+Validation can happen both at the client side and server side. 
 
+A lot of client side is embedded into HTML5, but can be extended to JavaScript, which lets users correct errors without making a server request.
 
-#### Validation
+Client side validation can be bypassed super easily, thus server side is a must.
 
-#### Redirects
+### Server-side validation
 
-#### HTML escaping
+The server-side validation is just a normal Python code checking data against desired requirements. Example of simple 24-hour clock validation:
 
-```python
-import cgi
-cgi.escape(<variable_from_user_input>)
+```html
+<form action="" method="POST">
+    <label>Hours (24-hour format):
+        <input name="hours" type="text" value="{hours}" />
+    </label>
+    <p class="error">{hours_error}</p>
+
+    <label>Minutes:
+        <input name="minutes" type="text" value="{minutes}" />
+    </label>
+    <p class="error">{minutes_error}</p>
+    <input type="submit" value="Validate" />
+</form>
 ```
 
+```python
+def validate_time():
+    
+    hours = request.form["hours"]
+    minutes = request.form["minutes"]
 
+    hours_error = ""
+    minutes_error = ""
+
+    # check if given integer values
+    if not is_integer(hours):
+        hours_error = "Not a valid integer."
+        hours = "" # clear it out to redisplay form without it
+    else:
+        hours = int(hours)
+        if hours > 23 or hours < 0:
+            hours_error = "Hours value out of range (0-23)."
+            hours = "" # clear it out to redisplay form without it
+
+    if not is_integer(minutes):
+        minutes_error = "Not a valid integer."
+        minutes = "" # clear it out to redisplay form without it
+        
+    else:
+        minutes = int(minutes)
+        if minutes > 59 or minutes < 0:
+            minutes_error = "Minutes value out of range (0-59)."
+            minutes = "" # clear it out to redisplay form without it
+
+    if not minutes_error and not hours_error: # empty string is truthy 
+        return "Success"
+    else:
+        return time_form.format(hours=hours,
+                        hours_error=hours_error,
+                        minutes=minutes,
+                        minutes_error=minutes_error)
+```
+
+### Redirects
+
+Using previous example, redirecting user when valid time is submitted:
+
+```python
+# must add:
+from flask import redirect
+
+(...)
+if not minutes_error and not hours_error:
+    return redirect("valid-time")
+(...)
+
+@app.route("/valid-time")
+def valid_time():
+    return "<h1>Thanks for submitting a valid time!</h1>"
+```
+
+The HTTP requests for redirect:
+
+```bash
+127.0.0.1 - - [22/Jun/2017 14:41:03] "POST /validate-time HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jun/2017 14:41:07] "POST /validate-time HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jun/2017 14:41:08] "GET /valid-time HTTP/1.1" 200 -
+```
+
+More advanced version with passing arguments:
+
+```python
+if not minutes_error and not hours_error:
+    time = str(hours) + ":" + str(minutes)
+    return redirect("valid-time?time={0}".format(time))
+```
+
+(...)
+
+```python
+@app.route("/valid-time")
+def valid_time():
+    time = request.args.get("time")
+    return "<h1>You submitted {0}. Thanks for submitting a valid time!</h1>".format(time)
+```
+
+## HTML escaping
+
+Any time user inputs data, one must assume the user wants to break our stuff with malicious, bad, terrible, argh stuff! 
+
+Either by breaking HTML and adding tags, or inserting JavaScript, which can do real harm. Or worst trying to [drop database](https://xkcd.com/327/).
+
+HTML escaping in Flask:
+
+```python
+# in imports, from Python standard library, not Flask:
+import cgi
+
+# for everything user inputs:
+cgi.escape(variable_from_user_input)
+```
+
+`cgi` translates code into entities which browsers can display as text. For example:
+
+```javascrit
+<script>bad javascript stuff</script>
+```
+
+will be displayed as text:  &lt;script&gt;bad javascript stuff&lt;/script&gt;
