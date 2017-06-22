@@ -120,5 +120,49 @@ def display_time_form():
                             minutes="",
                             minutes_error="")
 
+def is_integer(num_string):
+    try:
+        int(num_string)
+        return True
+    except ValueError:
+        return False
+
+@app.route("/validate-time", methods=["POST"])
+def validate_time():
+    
+    hours = request.form["hours"]
+    minutes = request.form["minutes"]
+
+    hours_error = ""
+    minutes_error = ""
+
+    # check if given integer values
+    if not is_integer(hours):
+        hours_error = "Not a valid integer."
+        hours = "" # clear it out to redisplay form without it
+    else:
+        hours = int(hours)
+        if hours > 23 or hours < 0:
+            hours_error = "Hours value out of range (0-23)."
+            hours = "" # clear it out to redisplay form without it
+
+    if not is_integer(minutes):
+        minutes_error = "Not a valid integer."
+        minutes = "" # clear it out to redisplay form without it
+        
+    else:
+        minutes = int(minutes)
+        if minutes > 59 or minutes < 0:
+            minutes_error = "Minutes value out of range (0-59)."
+            minutes = "" # clear it out to redisplay form without it
+
+    if not minutes_error and not hours_error: # empty string is truthy 
+        return "Success"
+    else:
+        return time_form.format(hours=hours,
+                        hours_error=hours_error,
+                        minutes=minutes,
+                        minutes_error=minutes_error)
+
 if __name__ == "__main__":
     app.run()
