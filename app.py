@@ -112,5 +112,13 @@ def print_form_values():
         response += "<b>{key}</b>: {value}<br>".format(key=field, value=request.form[field])
     return response
 
+
+@app.route("/validate-time")
+def display_time_form():
+    return time_form.format(hours="",
+                            hours_error="",
+                            minutes="",
+                            minutes_error="")
+
 if __name__ == "__main__":
     app.run()
