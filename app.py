@@ -7,7 +7,7 @@ import jinja2
 # as folder name 
 template_dir = os.path.join(os.path.dirname(__name__), "templates")
 # initialize jinja2 engine
-jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=True)
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -101,7 +101,8 @@ def index():
 @app.route("/hello")
 def hello():
     name = request.args.get('name')
-    return name
+    template = jinja_env.get_template("hello_greetings.html")
+    return template.render(name=name)
 
 @app.route("/form-inputs")
 def form_inputs():
