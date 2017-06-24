@@ -73,25 +73,6 @@ lc_form = """
 </html>
 """
 
-time_form = """
-<style>
-    .error {{ color: red; }}
-</style>
-<h1></h1>
-<form action="" method="POST">
-    <label>Hours (24-hour format):
-        <input name="hours" type="text" value="{hours}" />
-    </label>
-    <p class="error">{hours_error}</p>
-
-    <label>Minutes:
-        <input name="minutes" type="text" value="{minutes}" />
-    </label>
-    <p class="error">{minutes_error}</p>
-    <input type="submit" value="Validate" />
-</form>
-"""
-
 @app.route("/")
 def index():
     # grab template relative to templates folder
@@ -115,13 +96,10 @@ def print_form_values():
         response += "<b>{key}</b>: {value}<br>".format(key=field, value=request.form[field])
     return response
 
-
 @app.route("/validate-time")
 def display_time_form():
-    return time_form.format(hours="",
-                            hours_error="",
-                            minutes="",
-                            minutes_error="")
+    template = jinja_env.get_template("time_form.html")
+    return template.render() # does not need empty values, like .format() does
 
 def is_integer(num_string):
     try:
@@ -163,10 +141,11 @@ def validate_time():
         time = str(hours) + ":" + str(minutes)
         return redirect("valid-time?time={0}".format(time))
     else:
-        return time_form.format(hours=hours,
-                        hours_error=hours_error,
-                        minutes=minutes,
-                        minutes_error=minutes_error)
+        template = jinja_env.get_template("time_form.html")
+        return template.render(hours=hours,
+                                hours_error=hours_error,
+                                minutes=minutes,
+                                minutes_error=minutes_error)
 
 @app.route("/valid-time")
 def valid_time():
