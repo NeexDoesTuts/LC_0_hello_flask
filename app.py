@@ -1,16 +1,16 @@
 from flask import Flask, request, redirect
+import os
+import jinja2
+
+# create template directory
+# grab the location of the folder for the current file, and append "templates" 
+# as folder name 
+template_dir = os.path.join(os.path.dirname(__name__), "templates")
+# initialize jinja2 engine
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-
-form = """
-<!doctype html>
-<form action="/hello" method="GET">
-    <label for="name">What is your name?</label>
-    <input type="text" name="name" id="name">
-    <input type="submit">
-</form>
-"""
 
 lc_form = """
 <!doctype html>
@@ -94,7 +94,9 @@ time_form = """
 
 @app.route("/")
 def index():
-    return form
+    # grab template relative to templates folder
+    template = jinja_env.get_template("hello_form.html")
+    return template.render()
 
 @app.route("/hello")
 def hello():
