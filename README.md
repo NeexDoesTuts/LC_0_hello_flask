@@ -17,7 +17,10 @@
 - [HTML escaping](#html-escaping)
 - [Templates](#templates)
     - [Method with Jijna2 + specifying template directory](#method-with-jijna2-specifying-template-directory)
-- [Jinja if/else + loop -> TODO app](#jinja-if-else-loop-todo-app)
+    - [Jinja if/else + loop -> TODO app](#jinja-if-else-loop-todo-app)
+    - [Reusing templates - extending templates](#reusing-templates-extending-templates)
+    - [Using render_template](#using-render_template)
+        - [Passing in data:](#passing-in-data)
 # Get virtual environment set-up
 
 ```bash
@@ -483,7 +486,7 @@ Flask uses Jinja2 templating language.
       return template.render()
   ```
 
-# Jinja if/else + loop -> TODO app
+## Jinja if/else + loop -> TODO app
 
 A simple TODO app shows the looping logic in Jinja in an easy to understand way:
 
@@ -550,4 +553,104 @@ The Jinja loop and if/else syntax requires `{% %}` and closing tags:
     </ul>
 {% endif %}
 ```
+
+## Reusing templates - extending templates
+
+Create `base.html` file with basic layout:
+
+```jinja2
+<!doctype html>
+<html>
+    <head>
+        <title>{{title}}</title>
+    </head>
+    <body>
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>
+```
+
+and use it to create another template:
+
+```jinja2
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>TODOs</h1>
+	(...the rest of todo file...)
+{% endblock %}
+```
+
+The name of the block must match! And this way a lot of blocks can be created and extended. For JavaScript, footer, header, etc. 
+
+Passing in variables in `app.py` works as if there was only one template:
+
+```python
+@app.route("/todos", methods=["POST", "GET"])
+def todos():
+    # check if you are here via POST, and add task:
+    if request.method == "POST":
+        task = request.form['task']
+        tasks.append(task)
+
+    template = jinja_env.get_template("todos.html")
+    return template.render(title="TODOs", tasks=tasks)
+```
+
+[Jinja2 documentation](http://jinja.pocoo.org/docs/2.9/).
+
+## Using render_template
+
+Requirements:
+
+1. Templates must be in `templates` folder. Jinja let's you specify it (even though we used the default).
+2. The `autoescape` must be `True` (as render_template does that).
+
+Import changes:
+
+```python
+# add to imports
+from flask import Flask, request, redirect, render_template
+# remove:
+import jinja2
+```
+
+remove this:
+
+```python
+template_dir = os.path.join(os.path.dirname(__name__), "templates")
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=True)
+```
+
+change handlers, from this:
+
+```python
+@app.route("/")
+def index():
+    template = jinja_env.get_template("hello_form.html")
+    return template.render()
+```
+
+to this:
+
+```python
+@app.route("/")
+def index():
+    return render_templete("hello_form.html")
+```
+
+### Passing in data: 
+
+```python
+return render_template("time_form.html", 
+    hours=hours,
+    hours_error=hours_error,
+    minutes=minutes,
+	minutes_error=minutes_error)
+```
+
+Additional parameters are passed after the template name.
+
+Additional [render_template documentation](http://flask.pocoo.org/docs/0.12/api/#flask.render_template).
 
