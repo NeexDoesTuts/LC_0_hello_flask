@@ -17,7 +17,7 @@
 - [HTML escaping](#html-escaping)
 - [Templates](#templates)
     - [Method with Jijna2 + specifying template directory](#method-with-jijna2-specifying-template-directory)
-
+- [Jinja if/else + loop -> TODO app](#jinja-if-else-loop-todo-app)
 # Get virtual environment set-up
 
 ```bash
@@ -482,3 +482,72 @@ Flask uses Jinja2 templating language.
       template = jinja_env.get_template("time_form.html")
       return template.render()
   ```
+
+# Jinja if/else + loop -> TODO app
+
+A simple TODO app shows the looping logic in Jinja in an easy to understand way:
+
+```python
+@app.route("/todos", methods=["POST", "GET"])
+def todos():
+    # check if you are here via POST, and add task:
+    if request.method == "POST":
+        task = request.form['task']
+        tasks.append(task)
+
+    template = jinja_env.get_template("todos.html")
+    return template.render(tasks=tasks) # pass the list to template
+```
+
+The rout will check if it is a POST or GET (case sensitive) request, and if POST, add task to list of tasks. The task is passed to template:
+
+```jinja2
+<!doctype html>
+<html>
+    <head>
+        <title>TODOs</title>
+    </head>
+    <body>
+        <h1>TODOs</h1>
+        <form action="" method="POST">
+            <label for="task">
+                New Task:
+                <input type="text" name="task" id="task" />
+            </label>
+            <input type="submit" value="Add todo">
+        </form>
+
+        <hr />
+
+        {% if tasks|length == 0 %}
+        <p>No tasks yet</p>
+        {% else %}
+
+            <ul>
+                {% for task in tasks %}
+                <li>{{task}}</li>
+                {% endfor %}
+            </ul>
+
+        {% endif %}
+
+    </body>
+</html>
+```
+
+In the template Jinja checks for task length (line 18) and displays `No tasks yet` when empty, or renders a list of tasks, if not empty.
+
+The Jinja loop and if/else syntax requires `{% %}` and closing tags:
+
+```jinja2
+{% if tasks|length == 0 %}
+<p>No tasks yet</p>
+{% else %}
+    <ul>
+        {% for task in tasks %}
+        <li>{{task}}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+```
+
