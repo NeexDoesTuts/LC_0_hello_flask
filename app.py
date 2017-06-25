@@ -163,7 +163,7 @@ def todos():
         tasks.append(task)
 
     template = jinja_env.get_template("todos.html")
-    return template.render(tasks=tasks) # pass the list to template
+    return template.render(title="TODOs", tasks=tasks) # pass the list to template
 
 if __name__ == "__main__":
     app.run()
